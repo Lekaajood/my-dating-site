@@ -1,110 +1,60 @@
-// No upfront login. Show 5 cards. On "راسلها": ask login ONCE (modal), then proceed and rotate card.
-const EMAIL_DOMAIN = "example.com"; // عدلها لو عندك دومين
-let INDEX=[], QUEUE=[], VISIBLE=[], CACHE={};
-let pendingTarget = null; // holds {id} when user clicked message but not logged yet
 
-function getUser(){ try{return JSON.parse(localStorage.getItem('user'))||null;}catch(e){return null;} }
-function setUser(u){ localStorage.setItem('user', JSON.stringify(u)); }
-function sanitizeLocal(s){ return s.replace(/\s+/g,'').toLowerCase().replace(/[^\u0600-\u06FFa-z0-9]/g,''); }
-function mailtoFor(name, id){
-  const to = encodeURIComponent(sanitizeLocal(name)+id+'@'+EMAIL_DOMAIN);
-  const u = getUser(); const who = u ? (u.name+' — '+u.email) : 'زائر';
-  const subject = encodeURIComponent('رسالة إلى '+name);
-  const body = encodeURIComponent('مرحباً '+name+'\n\n[اكتب رسالتك هنا]\n\n—\nالمرسل: '+who);
-  return `mailto:${to}?subject=${subject}&body=${body}`;
+// app.js — نسخة مع صور من Picsum + fallback
+const EMAIL_DOMAIN = "example.com"; 
+let INDEX = [], QUEUE = [], VISIBLE = [], CACHE = {};
+let pendingTarget = null;
+
+function photoUrl(id){ return `https://picsum.photos/seed/girl${id}/400/400`; }
+
+const FALLBACK = [
+  { id: 1, name: "ليلى الخطيب", age: 23, city: "بيروت", height: "165", weight: "55", hobby: "القراءة",  photo: photoUrl(1) },
+  { id: 2, name: "نور المصري",  age: 25, city: "القاهرة", height: "160", weight: "52", hobby: "التصوير", photo: photoUrl(2) },
+  { id: 3, name: "سارة الهاشمي", age: 22, city: "دبي",   height: "162", weight: "54", hobby: "الطبخ",    photo: photoUrl(3) },
+  { id: 4, name: "مريم الأحمد", age: 24, city: "الرياض", height: "168", weight: "58", hobby: "الرياضة", photo: photoUrl(4) },
+  { id: 5, name: "هناء عمر",    age: 21, city: "عمّان",  height: "164", weight: "53", hobby: "الموسيقى", photo: photoUrl(5) }
+];
+
+async function loadIndex() {
+  try {
+    let res = await fetch("profiles/index.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("no profiles");
+    INDEX = await res.json();
+    INDEX = INDEX.map(e => ({ ...e, photo: e.photo || photoUrl(e.id) }));
+  } catch (e) {
+    console.warn("استخدمنا fallback", e);
+    INDEX = FALLBACK;
+  }
+  QUEUE = [...INDEX];
+  nextSuggestions();
 }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function takeNext(){ if(QUEUE.length===0) QUEUE=shuffle(INDEX.map(e=>e.id)); return QUEUE.shift(); }
 
-async function fetchIndex(){ const r=await fetch('profiles/index.json'); INDEX=await r.json(); QUEUE=shuffle(INDEX.map(e=>e.id)); }
-async function fetchProfile(id){ if(CACHE[id])return CACHE[id]; const r=await fetch(`profiles/${id}.json`); const d=await r.json(); CACHE[id]=d; return d; }
-async function initVisible(){ VISIBLE=[]; for(let i=0;i<5;i++) VISIBLE.push(takeNext()); }
-
-function openModal(p){
-  const modal=document.getElementById('modal'); const body=document.getElementById('modalBody');
-  body.innerHTML=`
-    <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
-      <img src="${p.photo}" alt="${p.name}" style="width:180px;height:180px;object-fit:cover;border-radius:10px;border:1px solid #eee">
-      <div style="flex:1">
-        <div class="detail"><div>الاسم</div><div>${p.name}</div></div>
-        <div class="detail"><div>العمر</div><div>${p.age}</div></div>
-        <div class="detail"><div>المكان</div><div>${p.city}</div></div>
-        <div class="detail"><div>الطول</div><div>${p.height_cm} سم</div></div>
-        <div class="detail"><div>الوزن</div><div>${p.weight_kg} كغ</div></div>
-        <div class="detail"><div>الهواية</div><div>${p.hobby}</div></div>
-      </div>
-    </div>`;
-  modal.classList.remove('hidden');
+function nextSuggestions() {
+  VISIBLE = QUEUE.splice(0, 5);
+  renderCards();
 }
-function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
 
-function openLogin(){ document.getElementById('loginModal').classList.remove('hidden'); }
-function closeLogin(){ document.getElementById('loginModal').classList.add('hidden'); }
-
-function renderCards(){
-  const root=document.getElementById('cards');
-  const map=new Map(INDEX.map(e=>[e.id,e]));
-  root.innerHTML=VISIBLE.map(id=>{
-    const e=map.get(id);
-    return `
-      <div class="card" data-id="${id}">
-        <img src="${e.photo}" alt="${e.name}">
-        <div class="body">
-          <div class="name" data-id="${e.id}">${e.name}</div>
-          <div class="meta">الهواية: ${e.hobby}</div>
-          <div class="actions">
-            <a href="#" class="btn message" data-id="${e.id}">راسلها</a>
-            <a href="#" class="btn secondary skip" data-id="${e.id}">تخطي</a>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
-  root.querySelectorAll('.name').forEach(el=>{
-    el.addEventListener('click', async (ev)=>{
-      const id=Number(ev.currentTarget.getAttribute('data-id'));
-      const p=await fetchProfile(id); openModal(p);
-    });
-  });
-  root.querySelectorAll('.message').forEach(el=>{
-    el.addEventListener('click', async (ev)=>{
-      ev.preventDefault();
-      const id=Number(ev.currentTarget.getAttribute('data-id'));
-      const p=await fetchProfile(id);
-      const u=getUser();
-      if(!u){ pendingTarget={id}; openLogin(); return; }
-      window.location.href=mailtoFor(p.name, p.id);
-      replaceCard(id);
-    });
-  });
-  root.querySelectorAll('.skip').forEach(el=>{
-    el.addEventListener('click', (ev)=>{ ev.preventDefault(); const id=Number(el.getAttribute('data-id')); replaceCard(id); });
+function renderCards() {
+  const feed = document.getElementById("feed");
+  feed.innerHTML = "";
+  VISIBLE.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${p.photo}" alt="${p.name}" style="width:100%;height:220px;object-fit:cover;border-radius:10px">
+      <h3>${p.name} ${p.age ? "(" + p.age + ")" : ""}</h3>
+      ${p.city ? `<p>🏙️ ${p.city}</p>` : ""}
+      ${p.height && p.weight ? `<p>📏 ${p.height} سم – ⚖️ ${p.weight} كغ</p>` : ""}
+      <p>🎯 الهواية: ${p.hobby||"—"}</p>
+      <button onclick="contact('${p.name}')">راسلها</button>
+    `;
+    feed.appendChild(card);
   });
 }
 
-function replaceCard(id){
-  const idx=VISIBLE.indexOf(id); if(idx===-1) return;
-  VISIBLE[idx]=takeNext(); renderCards();
+function contact(name) {
+  const email = name.replace(/\s+/g, ".") + "@" + EMAIL_DOMAIN;
+  window.location.href = `mailto:${email}?subject=مرحبا ${name}`;
+  nextSuggestions();
 }
 
-document.addEventListener('DOMContentLoaded', async ()=>{
-  document.getElementById('closeModal').addEventListener('click', closeModal);
-  document.getElementById('modal').addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
-  document.getElementById('closeLogin').addEventListener('click', closeLogin);
-  document.getElementById('loginForm').addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const name=document.getElementById('loginName').value.trim();
-    const email=document.getElementById('loginEmail').value.trim();
-    if(!name||!email){ alert('اكتب اسمك وإيميلك'); return; }
-    setUser({name,email}); closeLogin();
-    if(pendingTarget){ // proceed to mailto now
-      fetchProfile(pendingTarget.id).then(p=>{
-        window.location.href=mailtoFor(p.name, p.id);
-        replaceCard(pendingTarget.id);
-        pendingTarget=null;
-      });
-    }
-  });
-
-  await fetchIndex(); await initVisible(); renderCards();
-});
+loadIndex();
