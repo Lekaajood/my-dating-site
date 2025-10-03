@@ -1,10 +1,10 @@
 {
   "id": 8,
-  "name": "سلمى العلي",
+  "name": "سلمى النجار",
   "age": 31,
-  "city": "الدوحة",
-  "height_cm": 167,
-  "weight_kg": 69,
-  "hobby": "الألعاب",
-  "photo": "https://picsum.photos/seed/girl8/400/400"
+  "city": "بيروت",
+  "height_cm": 159,
+  "weight_kg": 49,
+  "hobby": "الموسيقى",
+  "photo": "https://picsum.photos/seed/girl8/600/600"
 }

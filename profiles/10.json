@@ -1,10 +1,10 @@
 {
   "id": 10,
-  "name": "مريم العلي",
-  "age": 22,
-  "city": "عمّان",
-  "height_cm": 164,
-  "weight_kg": 68,
+  "name": "دانا العقيل",
+  "age": 20,
+  "city": "مسقط",
+  "height_cm": 161,
+  "weight_kg": 61,
   "hobby": "الشطرنج",
-  "photo": "https://picsum.photos/seed/girl10/400/400"
+  "photo": "https://picsum.photos/seed/girl10/600/600"
 }

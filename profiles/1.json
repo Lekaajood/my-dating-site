@@ -1,10 +1,10 @@
 {
   "id": 1,
-  "name": "نور النجار",
-  "age": 30,
-  "city": "المنامة",
+  "name": "ليلى الخطيب",
+  "age": 21,
+  "city": "دبي",
   "height_cm": 163,
-  "weight_kg": 66,
-  "hobby": "الألعاب",
-  "photo": "https://picsum.photos/seed/girl1/400/400"
+  "weight_kg": 62,
+  "hobby": "القراءة",
+  "photo": "https://picsum.photos/seed/girl1/600/600"
 }

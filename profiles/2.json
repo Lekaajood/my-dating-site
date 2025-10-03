@@ -1,10 +1,10 @@
 {
   "id": 2,
-  "name": "رنا النجار",
-  "age": 30,
-  "city": "جدة",
+  "name": "نور المصري",
+  "age": 23,
+  "city": "الرياض",
   "height_cm": 157,
-  "weight_kg": 63,
-  "hobby": "اليوغا",
-  "photo": "https://picsum.photos/seed/girl2/400/400"
+  "weight_kg": 60,
+  "hobby": "الرسم",
+  "photo": "https://picsum.photos/seed/girl2/600/600"
 }

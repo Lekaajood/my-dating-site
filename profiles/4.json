@@ -1,10 +1,10 @@
 {
   "id": 4,
-  "name": "رنا السيد",
-  "age": 29,
-  "city": "مسقط",
+  "name": "مريم السيد",
+  "age": 28,
+  "city": "عمّان",
   "height_cm": 166,
-  "weight_kg": 72,
+  "weight_kg": 62,
   "hobby": "الجري",
-  "photo": "https://picsum.photos/seed/girl4/400/400"
+  "photo": "https://picsum.photos/seed/girl4/600/600"
 }

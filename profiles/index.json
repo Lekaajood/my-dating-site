@@ -1,146 +1,62 @@
 [
   {
     "id": 1,
-    "name": "نور النجار",
-    "photo": "https://picsum.photos/seed/girl1/400/400",
-    "hobby": "الألعاب"
+    "name": "ليلى الخطيب",
+    "photo": "https://picsum.photos/seed/girl1/600/600",
+    "hobby": "القراءة"
   },
   {
     "id": 2,
-    "name": "رنا النجار",
-    "photo": "https://picsum.photos/seed/girl2/400/400",
-    "hobby": "اليوغا"
+    "name": "نور المصري",
+    "photo": "https://picsum.photos/seed/girl2/600/600",
+    "hobby": "الرسم"
   },
   {
     "id": 3,
-    "name": "سارة العلي",
-    "photo": "https://picsum.photos/seed/girl3/400/400",
-    "hobby": "السباحة"
+    "name": "سارة الأنصاري",
+    "photo": "https://picsum.photos/seed/girl3/600/600",
+    "hobby": "التصوير"
   },
   {
     "id": 4,
-    "name": "رنا السيد",
-    "photo": "https://picsum.photos/seed/girl4/400/400",
+    "name": "مريم السيد",
+    "photo": "https://picsum.photos/seed/girl4/600/600",
     "hobby": "الجري"
   },
   {
     "id": 5,
-    "name": "بيان الهاشمي",
-    "photo": "https://picsum.photos/seed/girl5/400/400",
-    "hobby": "الجري"
+    "name": "رنا العلي",
+    "photo": "https://picsum.photos/seed/girl5/600/600",
+    "hobby": "السباحة"
   },
   {
     "id": 6,
-    "name": "رهف الهاشمي",
-    "photo": "https://picsum.photos/seed/girl6/400/400",
-    "hobby": "الأفلام"
+    "name": "هند الكرمي",
+    "photo": "https://picsum.photos/seed/girl6/600/600",
+    "hobby": "الطبخ"
   },
   {
     "id": 7,
-    "name": "سلمى الحداد",
-    "photo": "https://picsum.photos/seed/girl7/400/400",
-    "hobby": "الشطرنج"
-  },
-  {
-    "id": 8,
-    "name": "سلمى العلي",
-    "photo": "https://picsum.photos/seed/girl8/400/400",
-    "hobby": "الألعاب"
-  },
-  {
-    "id": 9,
-    "name": "يارا المصري",
-    "photo": "https://picsum.photos/seed/girl9/400/400",
-    "hobby": "الأفلام"
-  },
-  {
-    "id": 10,
-    "name": "مريم العلي",
-    "photo": "https://picsum.photos/seed/girl10/400/400",
-    "hobby": "الشطرنج"
-  },
-  {
-    "id": 11,
-    "name": "مريم الخطيب",
-    "photo": "https://picsum.photos/seed/girl11/400/400",
-    "hobby": "السباحة"
-  },
-  {
-    "id": 12,
-    "name": "بيان الهاشمي",
-    "photo": "https://picsum.photos/seed/girl12/400/400",
-    "hobby": "الخط"
-  },
-  {
-    "id": 13,
-    "name": "سلمى الخطيب",
-    "photo": "https://picsum.photos/seed/girl13/400/400",
-    "hobby": "الألعاب"
-  },
-  {
-    "id": 14,
-    "name": "سارة الكرمي",
-    "photo": "https://picsum.photos/seed/girl14/400/400",
-    "hobby": "الخط"
-  },
-  {
-    "id": 15,
-    "name": "نور الهاشمي",
-    "photo": "https://picsum.photos/seed/girl15/400/400",
-    "hobby": "القراءة"
-  },
-  {
-    "id": 16,
-    "name": "فرح المصري",
-    "photo": "https://picsum.photos/seed/girl16/400/400",
-    "hobby": "القراءة"
-  },
-  {
-    "id": 17,
-    "name": "فرح السيد",
-    "photo": "https://picsum.photos/seed/girl17/400/400",
-    "hobby": "التصوير"
-  },
-  {
-    "id": 18,
-    "name": "يارا الهاشمي",
-    "photo": "https://picsum.photos/seed/girl18/400/400",
-    "hobby": "الرسم"
-  },
-  {
-    "id": 19,
-    "name": "سلمى الهاشمي",
-    "photo": "https://picsum.photos/seed/girl19/400/400",
-    "hobby": "السباحة"
-  },
-  {
-    "id": 20,
-    "name": "سارة العلي",
-    "photo": "https://picsum.photos/seed/girl20/400/400",
-    "hobby": "الشطرنج"
-  },
-  {
-    "id": 21,
-    "name": "ليلى الكرمي",
-    "photo": "https://picsum.photos/seed/girl21/400/400",
+    "name": "فرح الهاشمي",
+    "photo": "https://picsum.photos/seed/girl7/600/600",
     "hobby": "الرحلات"
   },
   {
-    "id": 22,
-    "name": "بيان الهاشمي",
-    "photo": "https://picsum.photos/seed/girl22/400/400",
-    "hobby": "الألعاب"
+    "id": 8,
+    "name": "سلمى النجار",
+    "photo": "https://picsum.photos/seed/girl8/600/600",
+    "hobby": "الموسيقى"
   },
   {
-    "id": 23,
-    "name": "بيان الهاشمي",
-    "photo": "https://picsum.photos/seed/girl23/400/400",
-    "hobby": "القراءة"
+    "id": 9,
+    "name": "يارا الحداد",
+    "photo": "https://picsum.photos/seed/girl9/600/600",
+    "hobby": "اليوغا"
   },
   {
-    "id": 24,
-    "name": "بيان العلي",
-    "photo": "https://picsum.photos/seed/girl24/400/400",
-    "hobby": "الألعاب"
+    "id": 10,
+    "name": "دانا العقيل",
+    "photo": "https://picsum.photos/seed/girl10/600/600",
+    "hobby": "الشطرنج"
   }
 ]
