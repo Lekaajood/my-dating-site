@@ -1,22 +1,5 @@
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Tahoma,Arial,sans-serif;background:#fafafa;color:#111}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0ea5e9;color:#fff;position:sticky;top:0}
-.brand{font-weight:700}
-.nav .btn{margin-inline-start:8px}
-.container{max-width:1000px;margin:24px auto;padding:0 16px}
-.card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;margin-bottom:16px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.grid2 textarea{grid-column:1/-1}
-.btn{padding:10px 14px;border:0;border-radius:8px;background:#111;color:#fff;cursor:pointer}
-.btn.secondary{background:#444}
-.btn:disabled{opacity:.6;cursor:not-allowed}
-.hidden{display:none !important}
-.small{font-size:.9rem}.muted{color:#666}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.person{border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff}
-.person img{width:100%;height:200px;object-fit:cover}
-.person .pbody{padding:10px}
-.person .meta{color:#666;font-size:.9rem}
-.likebar{display:flex;gap:8px}
-.adslot{border:2px dashed #b7b7ff;background:#f6f6ff;border-radius:10px;padding:16px;text-align:center;color:#555}
-.footer{padding:24px;text-align:center;color:#777}
-input,select,textarea{padding:10px;border:1px solid #ddd;border-radius:8px;width:100%}
+body {font-family: Tahoma, sans-serif; background: #f2f2f2; text-align: center;}
+header {background: #3498db; color: white; padding: 1rem;}
+.cards {display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px;}
+.card {background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 10px; padding: 15px; width: 220px;}
+.card img {width: 100%; border-radius: 8px;}

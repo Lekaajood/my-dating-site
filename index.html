@@ -1,69 +1,17 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>موقع تعارف عربي — نسخة أولية</title>
+  <meta charset="UTF-8">
+  <title>موقع تعارف عربي</title>
   <link rel="stylesheet" href="styles.css">
-  <script type="module" src="app.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">تعارف عربي</div>
-    <nav class="nav">
-      <button id="loginBtn" class="btn">تسجيل / دخول</button>
-      <button id="logoutBtn" class="btn secondary hidden">تسجيل الخروج</button>
-      <button id="editProfileBtn" class="btn secondary hidden">تعديل البروفايل</button>
-    </nav>
+  <header>
+    <h1>موقع تعارف عربي</h1>
   </header>
-
-  <main class="container">
-    <section id="authSection" class="card">
-      <h2>ابدأ الآن</h2>
-      <p>سجّل دخولك ببريدك الإلكتروني.</p>
-      <form id="authForm" class="grid2">
-        <input id="email" type="email" placeholder="الإيميل" required>
-        <input id="password" type="password" placeholder="كلمة السر" required>
-        <button type="submit" class="btn">دخول / تسجيل</button>
-      </form>
-      <p class="muted small">أول مرة؟ سيتم إنشاء حساب لك تلقائيًا.</p>
-    </section>
-
-    <section id="profileEditor" class="card hidden">
-      <h2>بروفايلي</h2>
-      <form id="profileForm" class="grid2" enctype="multipart/form-data">
-        <input id="name" placeholder="الاسم" required>
-        <input id="age" type="number" min="18" max="100" placeholder="العمر" required>
-        <select id="gender" required>
-          <option value="">الجنس...</option>
-          <option value="ذكر">ذكر</option>
-          <option value="أنثى">أنثى</option>
-        </select>
-        <select id="lookingFor" required>
-          <option value="">أبحث عن...</option>
-          <option value="ذكر">ذكر</option>
-          <option value="أنثى">أنثى</option>
-          <option value="أي">أي</option>
-        </select>
-        <textarea id="bio" rows="3" placeholder="نبذة قصيرة"></textarea>
-        <input id="photo" type="file" accept="image/*">
-        <button type="submit" class="btn">حفظ البروفايل</button>
-      </form>
-    </section>
-
-    <section id="ads" class="card">
-      <h2>إعلانات</h2>
-      <div class="adslot">مساحة إعلانية 300×250</div>
-    </section>
-
-    <section id="feed" class="card hidden">
-      <h2>أشخاص ممكن يعجبوك</h2>
-      <div id="cards" class="cards"></div>
-    </section>
+  <main>
+    <section id="feed" class="cards"></section>
   </main>
-
-  <footer class="footer">
-    <span>© 2025 تعارف عربي — نسخة أولية (MVP)</span>
-  </footer>
+  <script src="app.js"></script>
 </body>
 </html>
