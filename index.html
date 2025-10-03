@@ -1,14 +1,33 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>موقع تعارف عربي</title>
+  <title>أسماء بنات عربية — ٥٠٠</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>موقع تعارف عربي</h1>
-  <section id="feed" class="cards"></section>
+  <header class="top">
+    <h1>قائمة التعارف — ٥٠٠ بنت</h1>
+    <div id="authArea" class="auth">
+      <div id="userInfo" class="hidden">
+        مرحباً، <span id="userNameDisplay"></span> • <button id="logoutBtn" class="btn small">تسجيل خروج</button>
+      </div>
+      <form id="loginForm" class="loginForm">
+        <input id="loginName" placeholder="اسمك" required>
+        <input id="loginEmail" placeholder="إيميلك" type="email" required>
+        <button type="submit" class="btn">تسجيل / دخول</button>
+      </form>
+    </div>
+    <p class="muted">اضغط "راسلها" بعد تسجيل الدخول لفتح نافذة البريد مع نص مُعد مسبقاً.</p>
+  </header>
+
+  <main class="container">
+    <div id="cards" class="cards"></div>
+  </main>
+
+  <footer class="footer">© 2025 — موقع تعارف عربي</footer>
+
   <script src="app.js"></script>
 </body>
 </html>
