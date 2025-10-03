@@ -1,151 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>موقع تعارف عربي - الصفحة الرئيسية</title>
-<style>
-  body {
-    font-family: "Arial", sans-serif;
-    background: #f0f8ff;
-    color: #333;
-    margin: 0; padding: 0;
-  }
-  header {
-    background-color: #5dade2;
-    padding: 20px;
-    text-align: center;
-    color: white;
-  }
-  h1 {
-    margin: 0;
-  }
-  .container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 0 15px;
-  }
-  .members {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  .member-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    width: 280px;
-    margin-bottom: 20px;
-    padding: 15px;
-    text-align: center;
-  }
-  .member-card img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  .member-name {
-    font-weight: bold;
-    margin: 10px 0 5px;
-    font-size: 20px;
-  }
-  .member-info {
-    font-size: 14px;
-    color: #555;
-  }
-  form {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    max-width: 500px;
-    margin: 40px auto;
-  }
-  form h2 {
-    margin-top: 0;
-    color: #5dade2;
-  }
-  label {
-    display: block;
-    margin-bottom: 8px;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  input, textarea {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-  button {
-    margin-top: 20px;
-    background-color: #5dade2;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-  }
-  button:hover {
-    background-color: #3d85c6;
-  }
-  footer {
-    text-align: center;
-    padding: 15px 0;
-    font-size: 13px;
-    color: #777;
-    margin-top: 40px;
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>موقع تعارف عربي — نسخة أولية</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
 </head>
 <body>
-<header>
-  <h1>موقع تعارف عربي</h1>
-</header>
-<div class="container">
-  <section>
-    <h2>الأعضاء الآن</h2>
-    <div class="members">
-      <div class="member-card">
-        <img src="https://randomuser.me/api/portraits/women/21.jpg" alt="سارة" />
-        <div class="member-name">سارة</div>
-        <div class="member-info">25 سنة - مصر</div>
-        <div class="member-info">باحثة عن علاقة جدية</div>
-      </div>
-      <div class="member-card">
-        <img src="https://randomuser.me/api/portraits/women/31.jpg" alt="ليلى" />
-        <div class="member-name">ليلى</div>
-        <div class="member-info">28 سنة - السعودية</div>
-        <div class="member-info">تبحث عن صداقة</div>
-      </div>
-      <div class="member-card">
-        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="نورا" />
-        <div class="member-name">نورا</div>
-        <div class="member-info">30 سنة - الأردن</div>
-        <div class="member-info">باحثة عن علاقة طويلة الأمد</div>
-      </div>
-    </div>
-  </section>
-  <section>
-    <form action="#" method="post">
-      <h2>راسلنا الآن</h2>
-      <label for="name">الاسم:</label>
-      <input type="text" id="name" name="name" required />
-      <label for="email">البريد الإلكتروني:</label>
-      <input type="email" id="email" name="email" required />
-      <label for="message">رسالتك:</label>
-      <textarea id="message" name="message" rows="5" required></textarea>
-      <button type="submit">إرسال</button>
-    </form>
-  </section>
-</div>
-<footer>
-  &copy; 2025 موقع تعارف عربي - جميع الحقوق محفوظة
-</footer>
+  <header class="topbar">
+    <div class="brand">تعارف عربي</div>
+    <nav class="nav">
+      <button id="loginBtn" class="btn">تسجيل / دخول</button>
+      <button id="logoutBtn" class="btn secondary hidden">تسجيل الخروج</button>
+      <button id="editProfileBtn" class="btn secondary hidden">تعديل البروفايل</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="authSection" class="card">
+      <h2>ابدأ الآن</h2>
+      <p>سجّل دخولك ببريدك الإلكتروني.</p>
+      <form id="authForm" class="grid2">
+        <input id="email" type="email" placeholder="الإيميل" required>
+        <input id="password" type="password" placeholder="كلمة السر" required>
+        <button type="submit" class="btn">دخول / تسجيل</button>
+      </form>
+      <p class="muted small">أول مرة؟ سيتم إنشاء حساب لك تلقائيًا.</p>
+    </section>
+
+    <section id="profileEditor" class="card hidden">
+      <h2>بروفايلي</h2>
+      <form id="profileForm" class="grid2" enctype="multipart/form-data">
+        <input id="name" placeholder="الاسم" required>
+        <input id="age" type="number" min="18" max="100" placeholder="العمر" required>
+        <select id="gender" required>
+          <option value="">الجنس...</option>
+          <option value="ذكر">ذكر</option>
+          <option value="أنثى">أنثى</option>
+        </select>
+        <select id="lookingFor" required>
+          <option value="">أبحث عن...</option>
+          <option value="ذكر">ذكر</option>
+          <option value="أنثى">أنثى</option>
+          <option value="أي">أي</option>
+        </select>
+        <textarea id="bio" rows="3" placeholder="نبذة قصيرة"></textarea>
+        <input id="photo" type="file" accept="image/*">
+        <button type="submit" class="btn">حفظ البروفايل</button>
+      </form>
+    </section>
+
+    <section id="ads" class="card">
+      <h2>إعلانات</h2>
+      <div class="adslot">مساحة إعلانية 300×250</div>
+    </section>
+
+    <section id="feed" class="card hidden">
+      <h2>أشخاص ممكن يعجبوك</h2>
+      <div id="cards" class="cards"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© 2025 تعارف عربي — نسخة أولية (MVP)</span>
+  </footer>
 </body>
 </html>
