@@ -1,5 +1,1 @@
-body {font-family: Tahoma, sans-serif; background: #f2f2f2; text-align: center;}
-header {background: #3498db; color: white; padding: 1rem;}
-.cards {display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px;}
-.card {background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 10px; padding: 15px; width: 220px;}
-.card img {width: 100%; border-radius: 8px;}
+
