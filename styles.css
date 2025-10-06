@@ -1,25 +1,12 @@
-
-*{box-sizing:border-box}
-:root{--brand:#0ea5e9}
-body{margin:0;font-family:system-ui,-apple-system,Tahoma,Arial,sans-serif;direction:rtl;background:#f7f8fb;color:#111}
-.site-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--brand);color:#fff;flex-wrap:wrap}
+/* تنسيق بسيط موحّد للصفحات الثلاث */
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Tahoma,Arial,sans-serif;direction:rtl;background:#f7f8fb;color:#111}
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#0ea5e9;color:#fff;flex-wrap:wrap}
 .logo{color:#fff;text-decoration:none;font-weight:800}
 .nav a{color:#fff;text-decoration:none;margin:0 6px}
 .nav a.active{text-decoration:underline}
-.hero{padding:26px 14px;text-align:center;background:#e0f2fe}
-.container{max-width:1200px;margin:16px auto;padding:0 12px}
-.with-side{display:grid;grid-template-columns:1fr 300px;gap:16px}
-@media(max-width:1000px){.with-side{grid-template-columns:1fr}}
-.content .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.card .cover img{width:100%;height:160px;object-fit:cover;display:block}
-.card h3{margin:10px 12px}
-.card .excerpt{margin:0 12px 10px;color:#555}
-.card .readmore{margin:0 12px 12px;color:#111;text-decoration:none;font-weight:600}
-.sidebar .widget{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px}
-.ad{text-align:center;margin:14px 0}
+.container{max-width:900px;margin:20px auto;padding:0 12px}
+.page{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px}
 .footer{text-align:center;color:#666;padding:18px;margin-top:24px}
-.post-head .hero{width:100%;height:260px;object-fit:cover;border-radius:12px}
-.post-body{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;margin-top:12px;line-height:1.8}
-.latest{list-style:none;padding:0;margin:0}
-.latest li{margin:6px 0}
+.btn{display:inline-block;background:#111;color:#fff;text-decoration:none;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+.contact-form{display:grid;gap:8px;margin-top:10px}
+.contact-form input,.contact-form textarea{padding:10px;border:1px solid #ddd;border-radius:8px}

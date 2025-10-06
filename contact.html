@@ -1,27 +1,52 @@
-
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>اتصل بنا — دليل العلاقات</title>
+<title>اتصل بنا | AnaWeHuwa</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="site-header">
-  <div class="brand"><a href="index.html" class="logo">دليل العلاقات</a></div>
+  <div class="brand"><a href="index.html" class="logo">AnaWeHuwa</a></div>
   <nav class="nav">
     <a href="index.html">الرئيسية</a>
-    <a class="active">اتصل بنا</a>
+    <a href="about.html">من نحن</a>
+    <a href="privacy.html">سياسة الخصوصية</a>
+    <a class="active" href="contact.html">اتصل بنا</a>
   </nav>
 </header>
-<main class="container with-side">
-  <section class="content">
+
+<main class="container">
+  <article class="page">
     <h1>اتصل بنا</h1>
-    <p>للإعلانات أو التعاون: <a href="mailto:hello@example.com">hello@example.com</a></p>
-  </section>
-  <aside class="sidebar"><div class="widget">مساحة إعلان</div></aside>
+    <p>يسعدنا تواصلكم للاستفسارات أو المقترحات أو فرص التعاون. يمكنكم مراسلتنا مباشرة عبر البريد:</p>
+    <p><a href="mailto:hello@anawehuwa.com" class="btn">hello@anawehuwa.com</a></p>
+
+    <h2>نموذج تواصل سريع</h2>
+    <form onsubmit="sendMail(event)" class="contact-form">
+      <label>الاسم</label>
+      <input id="name" required>
+      <label>البريد الإلكتروني</label>
+      <input id="email" type="email" required>
+      <label>رسالتك</label>
+      <textarea id="message" rows="6" required></textarea>
+      <button class="btn" type="submit">إرسال</button>
+    </form>
+    <script>
+    function sendMail(e){
+      e.preventDefault();
+      const n = document.getElementById('name').value.trim();
+      const m = document.getElementById('email').value.trim();
+      const b = document.getElementById('message').value.trim();
+      const subject = encodeURIComponent('رسالة من الموقع — ' + n);
+      const body = encodeURIComponent(b + '\n\n—\n' + n + ' — ' + m);
+      window.location.href = 'mailto:hello@anawehuwa.com?subject=' + subject + '&body=' + body;
+    }
+    </script>
+  </article>
 </main>
-<footer class="footer">© 2025 — دليل العلاقات</footer>
+
+<footer class="footer">© 2025 — AnaWeHuwa</footer>
 </body>
 </html>
