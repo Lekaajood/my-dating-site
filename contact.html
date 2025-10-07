@@ -1,52 +1,39 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>اتصل بنا | AnaWeHuwa</title>
-<link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اتصل بنا | Date Arab</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="brand"><a href="index.html" class="logo">AnaWeHuwa</a></div>
-  <nav class="nav">
-    <a href="index.html">الرئيسية</a>
-    <a href="about.html">من نحن</a>
-    <a href="privacy.html">سياسة الخصوصية</a>
-    <a class="active" href="contact.html">اتصل بنا</a>
-  </nav>
+
+<header class="header">
+  <div class="container nav">
+    <div class="brand">Date Arab <span class="badge">موقع تثقيفي</span></div>
+    <nav class="menu">
+      <a href="index.html" class="active">الرئيسية</a>
+      <a href="about.html">من نحن</a>
+      <a href="contact.html">اتصل بنا</a>
+    </nav>
+  </div>
 </header>
 
-<main class="container">
-  <article class="page">
+<div class="container" style="margin-top:18px">
+  <div class="card pad">
     <h1>اتصل بنا</h1>
-    <p>يسعدنا تواصلكم للاستفسارات أو المقترحات أو فرص التعاون. يمكنكم مراسلتنا مباشرة عبر البريد:</p>
-    <p><a href="mailto:hello@anawehuwa.com" class="btn">hello@anawehuwa.com</a></p>
-
-    <h2>نموذج تواصل سريع</h2>
-    <form onsubmit="sendMail(event)" class="contact-form">
+    <p>يسعدنا نسمع رأيك واقتراحاتك. النموذج التالي تجريبي (بدون إرسال فعلي).</p>
+    <form onsubmit="event.preventDefault(); alert('تم إرسال رسالتك (تجريبي).');">
       <label>الاسم</label>
-      <input id="name" required>
+      <input type="text" required>
       <label>البريد الإلكتروني</label>
-      <input id="email" type="email" required>
+      <input type="email" required>
       <label>رسالتك</label>
-      <textarea id="message" rows="6" required></textarea>
-      <button class="btn" type="submit">إرسال</button>
+      <textarea rows="6" required></textarea>
+      <div style="height:10px"></div>
+      <button type="submit">إرسال</button>
     </form>
-    <script>
-    function sendMail(e){
-      e.preventDefault();
-      const n = document.getElementById('name').value.trim();
-      const m = document.getElementById('email').value.trim();
-      const b = document.getElementById('message').value.trim();
-      const subject = encodeURIComponent('رسالة من الموقع — ' + n);
-      const body = encodeURIComponent(b + '\n\n—\n' + n + ' — ' + m);
-      window.location.href = 'mailto:hello@anawehuwa.com?subject=' + subject + '&body=' + body;
-    }
-    </script>
-  </article>
-</main>
-
-<footer class="footer">© 2025 — AnaWeHuwa</footer>
+  </div>
+</div>
+<footer class="footer">© 2025 Date Arab — كل الحقوق محفوظة</footer>
 </body>
 </html>
