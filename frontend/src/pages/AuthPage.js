@@ -135,119 +135,89 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login" data-testid="login-tab">تسجيل الدخول</TabsTrigger>
-              <TabsTrigger value="register" data-testid="register-tab">حساب جديد</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl">مرحباً بعودتك</CardTitle>
-                  <CardDescription>ادخل بياناتك لتسجيل الدخول</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">البريد الإلكتروني</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        name="email"
-                        placeholder="email@example.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        data-testid="login-email-input"
-                      />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">مرحباً بك في ChatFlow</CardTitle>
+              <CardDescription>سجل الدخول عبر Facebook للبدء</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!demoMode ? (
+                <>
+                  <Button 
+                    onClick={handleFacebookLogin}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6"
+                    disabled={loading}
+                    data-testid="facebook-login-btn"
+                  >
+                    <svg className="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    {loading ? 'جاري الاتصال بـ Facebook...' : 'تسجيل الدخول عبر Facebook'}
+                  </Button>
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-300" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">كلمة المرور</Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        name="password"
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        data-testid="login-password-input"
-                      />
+                    <div className="relative flex justify-center text-sm">
+                      <span className="bg-white px-4 text-gray-500">أو</span>
                     </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                      💡 لم يتم تكوين Facebook App ID بعد؟<br />
+                      يمكنك استخدام وضع Demo للتجربة
+                    </p>
                     <Button 
-                      type="submit" 
-                      className="w-full bg-emerald-500 hover:bg-emerald-600"
-                      disabled={loading}
-                      data-testid="login-submit-btn"
+                      onClick={handleFacebookLogin}
+                      variant="outline"
+                      className="w-full"
                     >
-                      {loading ? 'جاري التحميل...' : 'تسجيل الدخول'}
+                      جرب التطبيق (Demo Mode)
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="register">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl">إنشاء حساب جديد</CardTitle>
-                  <CardDescription>ابدأ باستخدام ChatFlow اليوم</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-name">الاسم</Label>
-                      <Input
-                        id="register-name"
-                        type="text"
-                        name="name"
-                        placeholder="الاسم الكامل"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        data-testid="register-name-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">البريد الإلكتروني</Label>
-                      <Input
-                        id="register-email"
-                        type="email"
-                        name="email"
-                        placeholder="email@example.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        data-testid="register-email-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">كلمة المرور</Label>
-                      <Input
-                        id="register-password"
-                        type="password"
-                        name="password"
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        data-testid="register-password-input"
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-emerald-500 hover:bg-emerald-600"
-                      disabled={loading}
-                      data-testid="register-submit-btn"
-                    >
-                      {loading ? 'جاري التحميل...' : 'إنشاء الحساب'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                </>
+              ) : (
+                <form onSubmit={handleDemoLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="demo-name">اسمك</Label>
+                    <Input
+                      id="demo-name"
+                      type="text"
+                      value={demoName}
+                      onChange={(e) => setDemoName(e.target.value)}
+                      placeholder="أدخل اسمك للتجربة"
+                      required
+                      data-testid="demo-name-input"
+                    />
+                  </div>
+                  <Button 
+                    type="submit"
+                    className="w-full bg-emerald-500 hover:bg-emerald-600"
+                    disabled={loading}
+                    data-testid="demo-login-btn"
+                  >
+                    {loading ? 'جاري الدخول...' : 'دخول (Demo)'}
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setDemoMode(false)}
+                  >
+                    رجوع
+                  </Button>
+                </form>
+              )}
+              
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>ملاحظة:</strong> لاستخدام تسجيل الدخول عبر Facebook، يجب إضافة Facebook App ID في إعدادات الخادم.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
