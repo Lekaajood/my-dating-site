@@ -416,10 +416,10 @@ export default function BroadcastCreate() {
                 <h3 className="font-semibold text-gray-800">صورة قابلة للنقر</h3>
               </div>
               
-              {/* Upload from device */}
-              <div className="space-y-2">
-                <Label>رفع صورة من جهازك</Label>
-                <div className="flex items-center gap-2">
+              {/* Upload from device - only show if no image */}
+              {!broadcast.message.clickable_image?.url && (
+                <div className="space-y-2">
+                  <Label>رفع صورة من جهازك</Label>
                   <Input
                     type="file"
                     accept="image/*"
@@ -433,9 +433,9 @@ export default function BroadcastCreate() {
                             message: {
                               ...broadcast.message,
                               clickable_image: {
-                                ...broadcast.message.clickable_image,
                                 url: reader.result,
-                                file_name: file.name
+                                file_name: file.name,
+                                click_url: broadcast.message.clickable_image?.click_url || ''
                               }
                             }
                           });
@@ -444,33 +444,12 @@ export default function BroadcastCreate() {
                       }
                     }}
                     data-testid="upload-image-input"
-                    className="flex-1"
                   />
-                  {broadcast.message.clickable_image?.url && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setBroadcast({
-                        ...broadcast,
-                        message: {
-                          ...broadcast.message,
-                          clickable_image: {
-                            ...broadcast.message.clickable_image,
-                            url: '',
-                            file_name: ''
-                          }
-                        }
-                      })}
-                    >
-                      حذف
-                    </Button>
-                  )}
+                  <p className="text-xs text-gray-500">
+                    📤 قم برفع صورة من جهازك (JPG, PNG, GIF - حتى 5MB)
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500">
-                  📤 قم برفع صورة من جهازك (JPG, PNG, GIF - حتى 5MB)
-                </p>
-              </div>
+              )}
 
               {/* Preview uploaded image */}
               {broadcast.message.clickable_image?.url && (
