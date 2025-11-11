@@ -105,7 +105,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>مرحباً بك في ChatFlow!</CardTitle>
+            <CardTitle>مرحباً بك في Reply Alto Bot!</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
