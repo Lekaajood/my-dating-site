@@ -219,12 +219,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 # Facebook OAuth Routes
 @api_router.get("/auth/facebook/login")
 async def facebook_login():
-    """Generate Facebook login URL"""
+    """Generate Facebook login URL - V2"""
     state = secrets.token_urlsafe(32)
     oauth_states[state] = {"created_at": datetime.now(timezone.utc)}
     
     if not FACEBOOK_APP_ID:
-        # Demo mode
         return {
             "auth_url": None,
             "demo_mode": True,
@@ -232,13 +231,8 @@ async def facebook_login():
         }
     
     redirect_uri = f"{BACKEND_URL}/api/auth/facebook/callback"
-    facebook_auth_url = (
-        f"https://www.facebook.com/v20.0/dialog/oauth?"
-        f"client_id={FACEBOOK_APP_ID}"
-        f"&redirect_uri={redirect_uri}"
-        f"&state={state}"
-        f"&scope=public_profile"
-    )
+    # Only request public_profile - basic permission
+    facebook_auth_url = f"https://www.facebook.com/v20.0/dialog/oauth?client_id={FACEBOOK_APP_ID}&redirect_uri={redirect_uri}&state={state}&scope=public_profile"
     
     return {"auth_url": facebook_auth_url, "state": state}
 
