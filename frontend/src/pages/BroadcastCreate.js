@@ -454,7 +454,25 @@ export default function BroadcastCreate() {
               {/* Preview uploaded image */}
               {broadcast.message.clickable_image?.url && (
                 <div className="space-y-2">
-                  <Label>معاينة الصورة</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>معاينة الصورة</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBroadcast({
+                        ...broadcast,
+                        message: {
+                          ...broadcast.message,
+                          clickable_image: undefined
+                        }
+                      })}
+                      data-testid="remove-image-btn"
+                    >
+                      <Trash2 className="w-4 h-4 ml-2" />
+                      حذف الصورة
+                    </Button>
+                  </div>
                   <div className="border rounded-lg p-4 bg-gray-50">
                     <img 
                       src={broadcast.message.clickable_image.url} 
