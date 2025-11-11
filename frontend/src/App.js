@@ -16,6 +16,7 @@ import SubscribersPage from "@/pages/SubscribersPage";
 import InboxPage from "@/pages/InboxPage";
 import SettingsPage from "@/pages/SettingsPage";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
