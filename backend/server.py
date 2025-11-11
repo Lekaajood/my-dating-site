@@ -27,8 +27,8 @@ db = client[os.environ['DB_NAME']]
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-min-32-chars')
 FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID', '')
 FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET', '')
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://chatflow-builder-2.preview.emergentagent.com')
-BACKEND_URL = os.environ.get('BACKEND_URL', 'https://chatflow-builder-2.preview.emergentagent.com')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://replyaltobot.online')
+BACKEND_URL = os.environ.get('BACKEND_URL', 'https://replyaltobot.online')
 
 security = HTTPBearer()
 
