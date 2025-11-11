@@ -1,0 +1,86 @@
+{
+  "total_tests": 13,
+  "passed_tests": 12,
+  "failed_tests": 1,
+  "success_rate": "92.3%",
+  "test_results": [
+    {
+      "test_name": "Facebook OAuth Endpoint",
+      "success": false,
+      "details": "{'auth_url': 'https://www.facebook.com/v20.0/dialog/oauth?client_id=25215950704710640&redirect_uri=https://replyaltobot.online/api/auth/facebook/callback&state=Go6Z7YpeklBgmi3_UVOOy50ktTz-vx-Fbh5mao-wXOk&scope=public_profile', 'state': 'Go6Z7YpeklBgmi3_UVOOy50ktTz-vx-Fbh5mao-wXOk'}",
+      "timestamp": "2025-11-11T11:27:32.963544"
+    },
+    {
+      "test_name": "User Registration",
+      "success": true,
+      "details": "User created with email: test_112732@example.com",
+      "timestamp": "2025-11-11T11:27:33.287398"
+    },
+    {
+      "test_name": "User Login",
+      "success": true,
+      "details": "Login successful for: login_test_112733@example.com",
+      "timestamp": "2025-11-11T11:27:33.808146"
+    },
+    {
+      "test_name": "Get User Profile",
+      "success": true,
+      "details": "Profile retrieved for user: Login Test User",
+      "timestamp": "2025-11-11T11:27:33.851161"
+    },
+    {
+      "test_name": "Create Facebook Page",
+      "success": true,
+      "details": "Page created: Test Facebook Page",
+      "timestamp": "2025-11-11T11:27:33.894230"
+    },
+    {
+      "test_name": "Get Facebook Pages",
+      "success": true,
+      "details": "Retrieved 1 pages",
+      "timestamp": "2025-11-11T11:27:33.934724"
+    },
+    {
+      "test_name": "Create Broadcast",
+      "success": true,
+      "details": "Broadcast created: Test Broadcast",
+      "timestamp": "2025-11-11T11:27:33.987285"
+    },
+    {
+      "test_name": "Get Broadcasts",
+      "success": true,
+      "details": "Retrieved 1 broadcasts",
+      "timestamp": "2025-11-11T11:27:34.026749"
+    },
+    {
+      "test_name": "Send Broadcast",
+      "success": true,
+      "details": "Broadcast sent successfully",
+      "timestamp": "2025-11-11T11:27:34.067426"
+    },
+    {
+      "test_name": "Create Flow",
+      "success": true,
+      "details": "Flow created: Test Flow",
+      "timestamp": "2025-11-11T11:27:34.126395"
+    },
+    {
+      "test_name": "Get Flows",
+      "success": true,
+      "details": "Retrieved 1 flows",
+      "timestamp": "2025-11-11T11:27:34.166926"
+    },
+    {
+      "test_name": "Update Flow",
+      "success": true,
+      "details": "Flow updated successfully",
+      "timestamp": "2025-11-11T11:27:34.204263"
+    },
+    {
+      "test_name": "Get Statistics",
+      "success": true,
+      "details": "Stats retrieved: {'total_subscribers': 0, 'active_subscribers': 0, 'total_messages': 0, 'total_broadcasts': 1, 'total_flows': 1}",
+      "timestamp": "2025-11-11T11:27:34.284726"
+    }
+  ]
+}
