@@ -270,6 +270,26 @@ async def login(input: UserLogin):
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+@api_router.get("/facebook/user-pages")
+async def get_user_facebook_pages(user_access_token: str, current_user: User = Depends(get_current_user)):
+    """Get user's Facebook pages with access tokens"""
+    url = "https://graph.facebook.com/v20.0/me/accounts"
+    params = {
+        "access_token": user_access_token,
+        "fields": "id,name,access_token,picture"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, params=params, timeout=10.0)
+            if response.status_code == 200:
+                data = response.json()
+                return {"success": True, "pages": data.get("data", [])}
+            else:
+                return {"success": False, "error": response.text}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
 # Facebook Webhook
 @api_router.get("/webhook/facebook")
 async def verify_webhook(request: Request):
