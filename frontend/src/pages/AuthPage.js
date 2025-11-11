@@ -40,6 +40,7 @@ export default function AuthPage() {
       if (res.data.demo_mode) {
         // Demo mode - show demo login form
         setDemoMode(true);
+        setLoading(false);
         toast.info('وضع Demo: يمكنك تسجيل الدخول بدون Facebook');
       } else {
         // Redirect to Facebook OAuth
