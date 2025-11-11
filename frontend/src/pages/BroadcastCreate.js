@@ -346,6 +346,58 @@ export default function BroadcastCreate() {
             </CardContent>
           </Card>
 
+          {/* Clickable Image */}
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-800">صورة قابلة للنقر</h3>
+              </div>
+              <div className="space-y-2">
+                <Label>رابط الصورة</Label>
+                <Input
+                  value={broadcast.message.clickable_image?.url || ''}
+                  onChange={(e) => setBroadcast({
+                    ...broadcast,
+                    message: {
+                      ...broadcast.message,
+                      clickable_image: {
+                        ...broadcast.message.clickable_image,
+                        url: e.target.value
+                      }
+                    }
+                  })}
+                  placeholder="https://example.com/image.jpg"
+                  data-testid="clickable-image-url"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>رابط الوجهة عند النقر</Label>
+                <Input
+                  value={broadcast.message.clickable_image?.click_url || ''}
+                  onChange={(e) => setBroadcast({
+                    ...broadcast,
+                    message: {
+                      ...broadcast.message,
+                      clickable_image: {
+                        ...broadcast.message.clickable_image,
+                        click_url: e.target.value
+                      }
+                    }
+                  })}
+                  placeholder="https://your-website.com"
+                  data-testid="clickable-image-click-url"
+                />
+              </div>
+              {broadcast.message.clickable_image?.url && broadcast.message.clickable_image?.click_url && (
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <p className="text-sm text-emerald-800">
+                    ✅ عند النقر على الصورة، سيتم توجيه المستخدم إلى: {broadcast.message.clickable_image.click_url}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Buttons */}
           <Card>
             <CardContent className="p-6 space-y-4">
