@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,36 +8,30 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import jwt
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import RedirectResponse
 import httpx
-import secrets
+import hmac
+import hashlib
+from passlib.context import CryptContext
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Security
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-min-32-chars')
-FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID', '')
 FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET', '')
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://replyaltobot.online')
-BACKEND_URL = os.environ.get('BACKEND_URL', 'https://replyaltobot.online')
+FACEBOOK_VERIFY_TOKEN = os.environ.get('FACEBOOK_VERIFY_TOKEN', 'my_verify_token_12345')
 
 security = HTTPBearer()
 
-# Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
-
-# Store states temporarily (use Redis in production)
-oauth_states = {}
 
 # Models
 class User(BaseModel):
@@ -225,106 +219,31 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="User not found")
     return User(**user)
 
-# Facebook OAuth Routes
-@api_router.get("/auth/facebook/login")
-async def facebook_login():
-    """Generate Facebook login URL - V2"""
-    state = secrets.token_urlsafe(32)
-    oauth_states[state] = {"created_at": datetime.now(timezone.utc)}
+# Send message to Facebook
+async def send_facebook_message(recipient_id: str, message_data: Dict, page_access_token: str):
+    """Send message via Facebook Messenger API"""
+    url = "https://graph.facebook.com/v20.0/me/messages"
     
-    if not FACEBOOK_APP_ID:
-        return {
-            "auth_url": None,
-            "demo_mode": True,
-            "message": "Facebook App ID not configured. Using demo mode."
-        }
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": message_data
+    }
     
-    redirect_uri = f"{BACKEND_URL}/api/auth/facebook/callback"
-    # Only request public_profile - basic permission
-    facebook_auth_url = f"https://www.facebook.com/v20.0/dialog/oauth?client_id={FACEBOOK_APP_ID}&redirect_uri={redirect_uri}&state={state}&scope=public_profile"
-    
-    return {"auth_url": facebook_auth_url, "state": state}
-
-@api_router.get("/auth/facebook/callback")
-async def facebook_callback(code: Optional[str] = None, state: Optional[str] = None, error: Optional[str] = None):
-    """Handle Facebook OAuth callback"""
-    
-    if error:
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth?error={error}")
-    
-    if not code:
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=missing_code")
-    
-    # Validate state
-    if state not in oauth_states:
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=invalid_state")
-    
-    # Exchange code for access token
-    token_url = "https://graph.facebook.com/v20.0/oauth/access_token"
-    redirect_uri = f"{BACKEND_URL}/api/auth/facebook/callback"
+    params = {"access_token": page_access_token}
     
     async with httpx.AsyncClient() as client:
-        response = await client.get(
-            token_url,
-            params={
-                "client_id": FACEBOOK_APP_ID,
-                "client_secret": FACEBOOK_APP_SECRET,
-                "redirect_uri": redirect_uri,
-                "code": code
-            }
-        )
-        
-        if response.status_code != 200:
-            return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=token_exchange_failed")
-        
-        token_data = response.json()
-        access_token = token_data.get("access_token")
-        
-        if not access_token:
-            return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=no_access_token")
-        
-        # Get user info
-        user_response = await client.get(
-            "https://graph.facebook.com/me",
-            params={
-                "fields": "id,name,email,picture",
-                "access_token": access_token
-            }
-        )
-        
-        if user_response.status_code != 200:
-            return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=user_info_failed")
-        
-        user_info = user_response.json()
-        
-        # Create or update user
-        existing_user = await db.users.find_one({"facebook_id": user_info["id"]}, {"_id": 0})
-        
-        if existing_user:
-            user = User(**existing_user)
-        else:
-            user = User(
-                facebook_id=user_info["id"],
-                name=user_info.get("name", "Facebook User"),
-                email=user_info.get("email"),
-                picture=user_info.get("picture", {}).get("data", {}).get("url")
-            )
-            await db.users.insert_one(user.model_dump())
-        
-        # Create JWT token
-        app_token = create_token(user.id)
-        
-        # Clean up state
-        del oauth_states[state]
-        
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth?token={app_token}")
+        try:
+            response = await client.post(url, params=params, json=payload, timeout=10.0)
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            else:
+                return {"success": False, "error": response.text}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
+# Auth Routes
 @api_router.post("/auth/register")
 async def register(input: UserRegister):
-    """Register with email/password"""
-    from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    
     existing = await db.users.find_one({"email": input.email}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already exists")
@@ -339,10 +258,6 @@ async def register(input: UserRegister):
 
 @api_router.post("/auth/login")
 async def login(input: UserLogin):
-    """Login with email/password"""
-    from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    
     user_doc = await db.users.find_one({"email": input.email}, {"_id": 0})
     if not user_doc or not pwd_context.verify(input.password, user_doc.get("password", "")):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -354,6 +269,160 @@ async def login(input: UserLogin):
 @api_router.get("/auth/me", response_model=User)
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+# Facebook Webhook
+@api_router.get("/webhook/facebook")
+async def verify_webhook(request: Request):
+    """Verify Facebook webhook"""
+    mode = request.query_params.get('hub.mode')
+    token = request.query_params.get('hub.verify_token')
+    challenge = request.query_params.get('hub.challenge')
+    
+    if mode == 'subscribe' and token == FACEBOOK_VERIFY_TOKEN:
+        logging.info("Webhook verified successfully")
+        return int(challenge)
+    else:
+        raise HTTPException(status_code=403, detail="Verification failed")
+
+@api_router.post("/webhook/facebook")
+async def handle_webhook(request: Request):
+    """Handle incoming Facebook messages"""
+    try:
+        body = await request.json()
+        
+        # Verify signature
+        signature = request.headers.get('X-Hub-Signature-256', '')
+        if FACEBOOK_APP_SECRET:
+            expected_signature = 'sha256=' + hmac.new(
+                FACEBOOK_APP_SECRET.encode(),
+                (await request.body()),
+                hashlib.sha256
+            ).hexdigest()
+            
+            if signature != expected_signature:
+                raise HTTPException(status_code=403, detail="Invalid signature")
+        
+        # Process webhook events
+        if body.get('object') == 'page':
+            for entry in body.get('entry', []):
+                page_id = entry.get('id')
+                
+                for messaging_event in entry.get('messaging', []):
+                    sender_id = messaging_event.get('sender', {}).get('id')
+                    recipient_id = messaging_event.get('recipient', {}).get('id')
+                    
+                    # Get page from DB
+                    page = await db.facebook_pages.find_one({"page_id": page_id}, {"_id": 0})
+                    if not page:
+                        continue
+                    
+                    # Handle message received
+                    if messaging_event.get('message'):
+                        message_text = messaging_event['message'].get('text', '')
+                        
+                        # Create or update subscriber
+                        subscriber = await db.subscribers.find_one(
+                            {"psid": sender_id, "page_id": page_id},
+                            {"_id": 0}
+                        )
+                        
+                        if not subscriber:
+                            # Create new subscriber
+                            subscriber_doc = {
+                                "id": str(uuid.uuid4()),
+                                "page_id": page_id,
+                                "user_id": page['user_id'],
+                                "psid": sender_id,
+                                "first_name": None,
+                                "last_name": None,
+                                "subscribed": True,
+                                "tags": [],
+                                "last_interaction": datetime.now(timezone.utc).isoformat(),
+                                "created_at": datetime.now(timezone.utc).isoformat()
+                            }
+                            await db.subscribers.insert_one(subscriber_doc)
+                            subscriber = subscriber_doc
+                        else:
+                            # Update last interaction
+                            await db.subscribers.update_one(
+                                {"psid": sender_id, "page_id": page_id},
+                                {"$set": {"last_interaction": datetime.now(timezone.utc).isoformat()}}
+                            )
+                        
+                        # Save message
+                        message_doc = {
+                            "id": str(uuid.uuid4()),
+                            "page_id": page_id,
+                            "subscriber_id": subscriber['id'],
+                            "sender": "subscriber",
+                            "message_type": "text",
+                            "content": {"text": message_text},
+                            "created_at": datetime.now(timezone.utc).isoformat()
+                        }
+                        await db.messages.insert_one(message_doc)
+                        
+                        # Check for automation triggers
+                        automations = await db.automations.find(
+                            {"page_id": page_id, "is_active": True},
+                            {"_id": 0}
+                        ).to_list(100)
+                        
+                        for automation in automations:
+                            if automation['type'] == 'keyword':
+                                keyword = automation['trigger'].get('keyword', '').lower()
+                                if keyword and keyword in message_text.lower():
+                                    # Trigger automation - send response
+                                    if automation.get('flow_id'):
+                                        # Send flow steps
+                                        flow = await db.flows.find_one({"id": automation['flow_id']}, {"_id": 0})
+                                        if flow and page.get('access_token'):
+                                            for step in flow.get('steps', []):
+                                                await send_flow_step(sender_id, step, page['access_token'])
+                    
+                    # Handle postback (button click)
+                    if messaging_event.get('postback'):
+                        payload = messaging_event['postback'].get('payload', '')
+                        # Handle button clicks
+                        logging.info(f"Postback received: {payload}")
+        
+        return {"status": "ok"}
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
+        return {"status": "error", "message": str(e)}
+
+async def send_flow_step(recipient_id: str, step: Dict, access_token: str):
+    """Send a flow step to recipient"""
+    message_data = {}
+    
+    if step['type'] == 'message':
+        message_data = {"text": step['content'].get('text', '')}
+        if step.get('buttons'):
+            message_data['quick_replies'] = [
+                {"content_type": "text", "title": btn['title'], "payload": btn.get('url', '')}
+                for btn in step['buttons'][:11]
+            ]
+    elif step['type'] == 'card':
+        elements = [{
+            "title": step['content'].get('title', ''),
+            "subtitle": step['content'].get('subtitle', ''),
+            "image_url": step['content'].get('image_url', ''),
+            "buttons": [
+                {"type": "web_url", "url": btn['url'], "title": btn['title']}
+                for btn in step.get('buttons', [])[:3]
+            ]
+        }]
+        message_data = {
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "generic",
+                    "elements": elements
+                }
+            }
+        }
+    
+    if message_data:
+        await send_facebook_message(recipient_id, message_data, access_token)
 
 # Facebook Pages
 @api_router.post("/pages", response_model=FacebookPage)
@@ -372,6 +441,17 @@ async def get_pages(current_user: User = Depends(get_current_user)):
 async def delete_page(page_id: str, current_user: User = Depends(get_current_user)):
     result = await db.facebook_pages.delete_one({"id": page_id, "user_id": current_user.id})
     if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Page not found")
+    return {"success": True}
+
+@api_router.patch("/pages/{page_id}")
+async def update_page_token(page_id: str, access_token: str, current_user: User = Depends(get_current_user)):
+    """Update page access token"""
+    result = await db.facebook_pages.update_one(
+        {"id": page_id, "user_id": current_user.id},
+        {"$set": {"access_token": access_token}}
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Page not found")
     return {"success": True}
 
@@ -482,24 +562,99 @@ async def send_broadcast(broadcast_id: str, current_user: User = Depends(get_cur
     if not broadcast:
         raise HTTPException(status_code=404, detail="Broadcast not found")
     
+    # Get page
+    page = await db.facebook_pages.find_one({"page_id": broadcast['page_id']}, {"_id": 0})
+    if not page or not page.get('access_token'):
+        raise HTTPException(status_code=400, detail="Page not connected or missing access token")
+    
+    # Get subscribers
     query = {"page_id": broadcast["page_id"], "subscribed": True}
     if broadcast["target_audience"] == "tags" and broadcast["target_tags"]:
         query["tags"] = {"$in": broadcast["target_tags"]}
     
-    total = await db.subscribers.count_documents(query)
+    subscribers = await db.subscribers.find(query, {"_id": 0}).to_list(10000)
+    total = len(subscribers)
+    sent_count = 0
     
+    # Send messages
+    for subscriber in subscribers:
+        message_content = broadcast['message']
+        
+        # Build message
+        if message_content.get('cards') and len(message_content['cards']) > 0:
+            # Send cards
+            elements = []
+            for card in message_content['cards'][:10]:
+                element = {
+                    "title": card.get('title', ''),
+                    "subtitle": card.get('subtitle', ''),
+                    "image_url": card.get('image_url', ''),
+                    "buttons": []
+                }
+                for btn in card.get('buttons', [])[:3]:
+                    element['buttons'].append({
+                        "type": "web_url",
+                        "url": btn['url'],
+                        "title": btn['title']
+                    })
+                elements.append(element)
+            
+            msg_data = {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "generic",
+                        "elements": elements
+                    }
+                }
+            }
+            result = await send_facebook_message(subscriber['psid'], msg_data, page['access_token'])
+            if result['success']:
+                sent_count += 1
+        else:
+            # Send text message
+            msg_data = {"text": message_content.get('text', '')}
+            if message_content.get('buttons'):
+                msg_data['quick_replies'] = [
+                    {"content_type": "text", "title": btn['title'], "payload": btn.get('url', '')}
+                    for btn in message_content['buttons'][:11]
+                ]
+            
+            result = await send_facebook_message(subscriber['psid'], msg_data, page['access_token'])
+            if result['success']:
+                sent_count += 1
+        
+        # Send clickable image if exists
+        if message_content.get('clickable_image') and message_content['clickable_image'].get('url'):
+            img_msg = {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "button",
+                        "text": message_content.get('text', 'تحقق من هذا!'),
+                        "buttons": [{
+                            "type": "web_url",
+                            "url": message_content['clickable_image'].get('click_url', '#'),
+                            "title": "اضغط هنا"
+                        }]
+                    }
+                }
+            }
+            await send_facebook_message(subscriber['psid'], img_msg, page['access_token'])
+    
+    # Update broadcast status
     await db.broadcasts.update_one(
         {"id": broadcast_id},
         {"$set": {
             "status": "sent",
             "sent_at": datetime.now(timezone.utc).isoformat(),
             "total_recipients": total,
-            "sent_count": total,
-            "delivered_count": total
+            "sent_count": sent_count,
+            "delivered_count": sent_count
         }}
     )
     
-    return {"success": True, "total_recipients": total}
+    return {"success": True, "total_recipients": total, "sent_count": sent_count}
 
 @api_router.delete("/broadcasts/{broadcast_id}")
 async def delete_broadcast(broadcast_id: str, current_user: User = Depends(get_current_user)):
