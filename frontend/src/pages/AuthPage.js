@@ -138,7 +138,7 @@ export default function AuthPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">مرحباً بك في ChatFlow</CardTitle>
+              <CardTitle className="text-2xl">مرحباً بك في Reply Alto Bot</CardTitle>
               <CardDescription>سجل الدخول عبر Facebook للبدء</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
