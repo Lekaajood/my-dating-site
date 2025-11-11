@@ -106,7 +106,7 @@ export default function DashboardLayout({ user, children }) {
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">ChatFlow</span>
+            <span className="text-xl font-bold gradient-text">Reply Alto Bot</span>
           </div>
         </div>
 
