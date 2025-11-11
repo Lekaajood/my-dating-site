@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { MessageSquare, Zap, Users, TrendingUp } from 'lucide-react';
 
@@ -15,54 +16,45 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
-  const [demoName, setDemoName] = useState('');
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '' });
 
   useEffect(() => {
-    // Handle OAuth callback
     const token = searchParams.get('token');
-    const error = searchParams.get('error');
-    
     if (token) {
       localStorage.setItem('token', token);
-      toast.success('تم تسجيل الدخول عبر Facebook بنجاح!');
+      toast.success('تم تسجيل الدخول بنجاح!');
       navigate('/');
-    } else if (error) {
-      toast.error(`خطأ في تسجيل الدخول: ${error}`);
     }
   }, [searchParams, navigate]);
 
-  const handleFacebookLogin = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API}/auth/facebook/login`);
-      
-      if (res.data.demo_mode) {
-        // Demo mode - show demo login form
-        setDemoMode(true);
-        setLoading(false);
-        toast.info('وضع Demo: يمكنك تسجيل الدخول بدون Facebook');
-      } else {
-        // Redirect to Facebook OAuth
-        window.location.href = res.data.auth_url;
-      }
-    } catch (error) {
-      toast.error('فشل الاتصال بـ Facebook');
-      setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/auth/demo-login?name=${encodeURIComponent(demoName)}`);
+      const res = await axios.post(`${API}/auth/login`, loginData);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       toast.success('تم تسجيل الدخول بنجاح!');
       navigate('/');
     } catch (error) {
-      toast.error('فشل تسجيل الدخول');
+      toast.error(error.response?.data?.detail || 'فشل تسجيل الدخول');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API}/auth/register`, registerData);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      toast.success('تم إنشاء الحساب بنجاح!');
+      navigate('/');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'فشل إنشاء الحساب');
     } finally {
       setLoading(false);
     }
@@ -136,89 +128,114 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">مرحباً بك في Reply Alto Bot</CardTitle>
-              <CardDescription>سجل الدخول عبر Facebook للبدء</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!demoMode ? (
-                <>
-                  <Button 
-                    onClick={handleFacebookLogin}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6"
-                    disabled={loading}
-                    data-testid="facebook-login-btn"
-                  >
-                    <svg className="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    {loading ? 'جاري الاتصال بـ Facebook...' : 'تسجيل الدخول عبر Facebook'}
-                  </Button>
-                  
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-gray-300" />
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login" data-testid="login-tab">تسجيل الدخول</TabsTrigger>
+              <TabsTrigger value="register" data-testid="register-tab">حساب جديد</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="login">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">مرحباً بعودتك</CardTitle>
+                  <CardDescription>ادخل بياناتك لتسجيل الدخول</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">البريد الإلكتروني</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        placeholder="email@example.com"
+                        required
+                        data-testid="login-email-input"
+                      />
                     </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="bg-white px-4 text-gray-500">أو</span>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">كلمة المرور</Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        placeholder="••••••••"
+                        required
+                        data-testid="login-password-input"
+                      />
                     </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-4">
-                      💡 لم يتم تكوين Facebook App ID بعد؟<br />
-                      يمكنك استخدام وضع Demo للتجربة
-                    </p>
                     <Button 
-                      onClick={handleFacebookLogin}
-                      variant="outline"
-                      className="w-full"
+                      type="submit" 
+                      className="w-full bg-emerald-500 hover:bg-emerald-600"
+                      disabled={loading}
+                      data-testid="login-submit-btn"
                     >
-                      جرب التطبيق (Demo Mode)
+                      {loading ? 'جاري التحميل...' : 'تسجيل الدخول'}
                     </Button>
-                  </div>
-                </>
-              ) : (
-                <form onSubmit={handleDemoLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="demo-name">اسمك</Label>
-                    <Input
-                      id="demo-name"
-                      type="text"
-                      value={demoName}
-                      onChange={(e) => setDemoName(e.target.value)}
-                      placeholder="أدخل اسمك للتجربة"
-                      required
-                      data-testid="demo-name-input"
-                    />
-                  </div>
-                  <Button 
-                    type="submit"
-                    className="w-full bg-emerald-500 hover:bg-emerald-600"
-                    disabled={loading}
-                    data-testid="demo-login-btn"
-                  >
-                    {loading ? 'جاري الدخول...' : 'دخول (Demo)'}
-                  </Button>
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setDemoMode(false)}
-                  >
-                    رجوع
-                  </Button>
-                </form>
-              )}
-              
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>ملاحظة:</strong> لاستخدام تسجيل الدخول عبر Facebook، يجب إضافة Facebook App ID في إعدادات الخادم.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="register">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">إنشاء حساب جديد</CardTitle>
+                  <CardDescription>ابدأ باستخدام Reply Alto Bot اليوم</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-name">الاسم</Label>
+                      <Input
+                        id="register-name"
+                        type="text"
+                        value={registerData.name}
+                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                        placeholder="الاسم الكامل"
+                        required
+                        data-testid="register-name-input"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">البريد الإلكتروني</Label>
+                      <Input
+                        id="register-email"
+                        type="email"
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                        placeholder="email@example.com"
+                        required
+                        data-testid="register-email-input"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password">كلمة المرور</Label>
+                      <Input
+                        id="register-password"
+                        type="password"
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                        placeholder="••••••••"
+                        required
+                        data-testid="register-password-input"
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-emerald-500 hover:bg-emerald-600"
+                      disabled={loading}
+                      data-testid="register-submit-btn"
+                    >
+                      {loading ? 'جاري التحميل...' : 'إنشاء الحساب'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
