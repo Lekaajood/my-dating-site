@@ -237,7 +237,7 @@ async def facebook_login():
         f"client_id={FACEBOOK_APP_ID}"
         f"&redirect_uri={redirect_uri}"
         f"&state={state}"
-        f"&scope=email,public_profile,pages_show_list,pages_messaging"
+        f"&scope=public_profile"
     )
     
     return {"auth_url": facebook_auth_url, "state": state}
