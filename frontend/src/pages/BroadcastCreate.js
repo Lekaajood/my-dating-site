@@ -283,12 +283,75 @@ export default function BroadcastCreate() {
                       rows={2}
                       data-testid={`card-subtitle-${cardIndex}`}
                     />
-                    <Input
-                      value={card.image_url}
-                      onChange={(e) => updateCard(cardIndex, 'image_url', e.target.value)}
-                      placeholder="رابط الصورة (اختياري)"
-                      data-testid={`card-image-${cardIndex}`}
-                    />
+                    {/* Upload image for card */}
+                    <div className="space-y-2">
+                      <Label className="text-xs">رفع صورة للكارد</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              updateCard(cardIndex, 'image_url', reader.result);
+                              updateCard(cardIndex, 'image_file_name', file.name);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        data-testid={`card-image-upload-${cardIndex}`}
+                        className="text-sm"
+                      />
+                    </div>
+                    
+                    {/* Preview card image */}
+                    {card.image_url && (
+                      <div className="border rounded p-2 bg-gray-50">
+                        <img 
+                          src={card.image_url} 
+                          alt="Card preview" 
+                          className="max-w-full h-auto max-h-32 mx-auto rounded"
+                        />
+                        {card.image_file_name && (
+                          <p className="text-xs text-gray-500 text-center mt-1">
+                            {card.image_file_name}
+                          </p>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            updateCard(cardIndex, 'image_url', '');
+                            updateCard(cardIndex, 'image_file_name', '');
+                          }}
+                          className="w-full mt-2 text-xs"
+                        >
+                          حذف الصورة
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {!card.image_url && (
+                      <>
+                        <div className="relative">
+                          <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-gray-200" />
+                          </div>
+                          <div className="relative flex justify-center text-xs">
+                            <span className="bg-white px-2 text-gray-400">أو</span>
+                          </div>
+                        </div>
+                        <Input
+                          value={card.image_url}
+                          onChange={(e) => updateCard(cardIndex, 'image_url', e.target.value)}
+                          placeholder="رابط الصورة من الإنترنت"
+                          data-testid={`card-image-${cardIndex}`}
+                        />
+                      </>
+                    )}
+                    
                     <Input
                       value={card.image_click_url || ''}
                       onChange={(e) => updateCard(cardIndex, 'image_click_url', e.target.value)}
