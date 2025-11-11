@@ -82,7 +82,7 @@ export default function AuthPage() {
             <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
               <MessageSquare className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">ChatFlow</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Reply Alto Bot</h1>
           </div>
           <h2 className="text-4xl font-bold text-gray-800 mb-4">
             أتمتة محادثات<br />Facebook Messenger
@@ -132,7 +132,7 @@ export default function AuthPage() {
               <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
                 <MessageSquare className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-800">ChatFlow</h1>
+              <h1 className="text-3xl font-bold text-gray-800">Reply Alto Bot</h1>
             </div>
           </div>
 
