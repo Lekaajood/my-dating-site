@@ -319,24 +319,35 @@ async def facebook_callback(code: Optional[str] = None, state: Optional[str] = N
         
         return RedirectResponse(url=f"{FRONTEND_URL}/auth?token={app_token}")
 
-@api_router.post("/auth/demo-login")
-async def demo_login(name: str):
-    """Demo login for testing without Facebook"""
-    demo_id = f"demo-{str(uuid.uuid4())[:8]}"
+@api_router.post("/auth/register")
+async def register(input: UserRegister):
+    """Register with email/password"""
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     
-    existing_user = await db.users.find_one({"facebook_id": demo_id}, {"_id": 0})
+    existing = await db.users.find_one({"email": input.email}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already exists")
     
-    if existing_user:
-        user = User(**existing_user)
-    else:
-        user = User(
-            facebook_id=demo_id,
-            name=name,
-            email=None,
-            picture=None
-        )
-        await db.users.insert_one(user.model_dump())
+    user = User(email=input.email, name=input.name)
+    doc = user.model_dump()
+    doc["password"] = pwd_context.hash(input.password)
+    await db.users.insert_one(doc)
     
+    token = create_token(user.id)
+    return {"user": user, "token": token}
+
+@api_router.post("/auth/login")
+async def login(input: UserLogin):
+    """Login with email/password"""
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    user_doc = await db.users.find_one({"email": input.email}, {"_id": 0})
+    if not user_doc or not pwd_context.verify(input.password, user_doc.get("password", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    user = User(**user_doc)
     token = create_token(user.id)
     return {"user": user, "token": token}
 
