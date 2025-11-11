@@ -352,24 +352,120 @@ export default function BroadcastCreate() {
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">صورة قابلة للنقر</h3>
               </div>
+              
+              {/* Upload from device */}
               <div className="space-y-2">
-                <Label>رابط الصورة</Label>
-                <Input
-                  value={broadcast.message.clickable_image?.url || ''}
-                  onChange={(e) => setBroadcast({
-                    ...broadcast,
-                    message: {
-                      ...broadcast.message,
-                      clickable_image: {
-                        ...broadcast.message.clickable_image,
-                        url: e.target.value
+                <Label>رفع صورة من جهازك</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setBroadcast({
+                            ...broadcast,
+                            message: {
+                              ...broadcast.message,
+                              clickable_image: {
+                                ...broadcast.message.clickable_image,
+                                url: reader.result,
+                                file_name: file.name
+                              }
+                            }
+                          });
+                        };
+                        reader.readAsDataURL(file);
                       }
-                    }
-                  })}
-                  placeholder="https://example.com/image.jpg"
-                  data-testid="clickable-image-url"
-                />
+                    }}
+                    data-testid="upload-image-input"
+                    className="flex-1"
+                  />
+                  {broadcast.message.clickable_image?.url && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBroadcast({
+                        ...broadcast,
+                        message: {
+                          ...broadcast.message,
+                          clickable_image: {
+                            ...broadcast.message.clickable_image,
+                            url: '',
+                            file_name: ''
+                          }
+                        }
+                      })}
+                    >
+                      حذف
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">
+                  📤 قم برفع صورة من جهازك (JPG, PNG, GIF - حتى 5MB)
+                </p>
               </div>
+
+              {/* Preview uploaded image */}
+              {broadcast.message.clickable_image?.url && (
+                <div className="space-y-2">
+                  <Label>معاينة الصورة</Label>
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <img 
+                      src={broadcast.message.clickable_image.url} 
+                      alt="Preview" 
+                      className="max-w-full h-auto max-h-64 mx-auto rounded"
+                    />
+                    {broadcast.message.clickable_image.file_name && (
+                      <p className="text-xs text-gray-600 text-center mt-2">
+                        📁 {broadcast.message.clickable_image.file_name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* OR separator */}
+              {!broadcast.message.clickable_image?.url && (
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-4 text-gray-500">أو</span>
+                  </div>
+                </div>
+              )}
+
+              {/* URL input (only show if no uploaded image) */}
+              {!broadcast.message.clickable_image?.url && (
+                <div className="space-y-2">
+                  <Label>رابط الصورة</Label>
+                  <Input
+                    value={broadcast.message.clickable_image?.url || ''}
+                    onChange={(e) => setBroadcast({
+                      ...broadcast,
+                      message: {
+                        ...broadcast.message,
+                        clickable_image: {
+                          ...broadcast.message.clickable_image,
+                          url: e.target.value
+                        }
+                      }
+                    })}
+                    placeholder="https://example.com/image.jpg"
+                    data-testid="clickable-image-url"
+                  />
+                  <p className="text-xs text-gray-500">
+                    🔗 أو أدخل رابط صورة من الإنترنت
+                  </p>
+                </div>
+              )}
+
+              {/* Click destination */}
               <div className="space-y-2">
                 <Label>رابط الوجهة عند النقر</Label>
                 <Input
@@ -388,6 +484,7 @@ export default function BroadcastCreate() {
                   data-testid="clickable-image-click-url"
                 />
               </div>
+              
               {broadcast.message.clickable_image?.url && broadcast.message.clickable_image?.click_url && (
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
                   <p className="text-sm text-emerald-800">
