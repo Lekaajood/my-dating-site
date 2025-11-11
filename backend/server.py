@@ -8,10 +8,12 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
-from passlib.context import CryptContext
+from datetime import datetime, timezone, timedelta
 import jwt
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import RedirectResponse
+import httpx
+import secrets
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -22,30 +24,30 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Security
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-min-32-chars')
+FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID', '')
+FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET', '')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://chatflow-builder-2.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('BACKEND_URL', 'https://chatflow-builder-2.preview.emergentagent.com')
+
 security = HTTPBearer()
 
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Store states temporarily (use Redis in production)
+oauth_states = {}
+
 # Models
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    email: str
+    facebook_id: str
+    email: Optional[str] = None
     name: str
+    picture: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-
-class UserCreate(BaseModel):
-    email: str
-    password: str
-    name: str
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
 
 class FacebookPage(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -69,7 +71,7 @@ class Subscriber(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     page_id: str
     user_id: str
-    psid: str  # Page-scoped ID from Facebook
+    psid: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     profile_pic: Optional[str] = None
@@ -87,9 +89,9 @@ class SubscriberCreate(BaseModel):
 
 class FlowStep(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    type: str  # message, card, delay, condition
-    content: Dict[str, Any] = {}  # message text, card data, delay time, etc
-    buttons: List[Dict[str, Any]] = []  # buttons for cards/messages
+    type: str
+    content: Dict[str, Any] = {}
+    buttons: List[Dict[str, Any]] = []
     next_step_id: Optional[str] = None
     position: Dict[str, float] = {"x": 0, "y": 0}
 
@@ -100,8 +102,8 @@ class Flow(BaseModel):
     page_id: str
     name: str
     description: Optional[str] = None
-    trigger_type: str  # welcome, keyword, comment, manual
-    trigger_value: Optional[str] = None  # keyword or comment text
+    trigger_type: str
+    trigger_value: Optional[str] = None
     steps: List[FlowStep] = []
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -128,10 +130,10 @@ class Broadcast(BaseModel):
     user_id: str
     page_id: str
     name: str
-    message: Dict[str, Any]  # message content with text, cards, buttons
-    target_audience: str  # all, tags
+    message: Dict[str, Any]
+    target_audience: str
     target_tags: List[str] = []
-    status: str  # draft, scheduled, sent, sending
+    status: str
     scheduled_at: Optional[str] = None
     sent_at: Optional[str] = None
     total_recipients: int = 0
@@ -155,8 +157,8 @@ class Automation(BaseModel):
     user_id: str
     page_id: str
     name: str
-    type: str  # comment_to_message, welcome_message, keyword
-    trigger: Dict[str, Any]  # trigger configuration
+    type: str
+    trigger: Dict[str, Any]
     flow_id: Optional[str] = None
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -173,8 +175,8 @@ class Message(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     page_id: str
     subscriber_id: str
-    sender: str  # user or subscriber
-    message_type: str  # text, card, button_click
+    sender: str
+    message_type: str
     content: Dict[str, Any]
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -193,12 +195,6 @@ class Stats(BaseModel):
     total_flows: int
 
 # Helper functions
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
 def create_token(user_id: str):
     payload = {"user_id": user_id, "exp": datetime.now(timezone.utc).timestamp() + 86400 * 30}
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
@@ -220,28 +216,124 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="User not found")
     return User(**user)
 
-# Routes
-@api_router.post("/auth/register")
-async def register(input: UserCreate):
-    existing = await db.users.find_one({"email": input.email}, {"_id": 0})
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already exists")
+# Facebook OAuth Routes
+@api_router.get("/auth/facebook/login")
+async def facebook_login():
+    """Generate Facebook login URL"""
+    state = secrets.token_urlsafe(32)
+    oauth_states[state] = {"created_at": datetime.now(timezone.utc)}
     
-    user = User(email=input.email, name=input.name)
-    doc = user.model_dump()
-    doc["password"] = get_password_hash(input.password)
-    await db.users.insert_one(doc)
+    if not FACEBOOK_APP_ID:
+        # Demo mode
+        return {
+            "auth_url": None,
+            "demo_mode": True,
+            "message": "Facebook App ID not configured. Using demo mode."
+        }
     
-    token = create_token(user.id)
-    return {"user": user, "token": token}
+    redirect_uri = f"{BACKEND_URL}/api/auth/facebook/callback"
+    facebook_auth_url = (
+        f"https://www.facebook.com/v20.0/dialog/oauth?"
+        f"client_id={FACEBOOK_APP_ID}"
+        f"&redirect_uri={redirect_uri}"
+        f"&state={state}"
+        f"&scope=email,public_profile,pages_show_list,pages_messaging"
+    )
+    
+    return {"auth_url": facebook_auth_url, "state": state}
 
-@api_router.post("/auth/login")
-async def login(input: UserLogin):
-    user_doc = await db.users.find_one({"email": input.email}, {"_id": 0})
-    if not user_doc or not verify_password(input.password, user_doc["password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+@api_router.get("/auth/facebook/callback")
+async def facebook_callback(code: Optional[str] = None, state: Optional[str] = None, error: Optional[str] = None):
+    """Handle Facebook OAuth callback"""
     
-    user = User(**user_doc)
+    if error:
+        return RedirectResponse(url=f"{FRONTEND_URL}/auth?error={error}")
+    
+    if not code:
+        return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=missing_code")
+    
+    # Validate state
+    if state not in oauth_states:
+        return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=invalid_state")
+    
+    # Exchange code for access token
+    token_url = "https://graph.facebook.com/v20.0/oauth/access_token"
+    redirect_uri = f"{BACKEND_URL}/api/auth/facebook/callback"
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            token_url,
+            params={
+                "client_id": FACEBOOK_APP_ID,
+                "client_secret": FACEBOOK_APP_SECRET,
+                "redirect_uri": redirect_uri,
+                "code": code
+            }
+        )
+        
+        if response.status_code != 200:
+            return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=token_exchange_failed")
+        
+        token_data = response.json()
+        access_token = token_data.get("access_token")
+        
+        if not access_token:
+            return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=no_access_token")
+        
+        # Get user info
+        user_response = await client.get(
+            "https://graph.facebook.com/me",
+            params={
+                "fields": "id,name,email,picture",
+                "access_token": access_token
+            }
+        )
+        
+        if user_response.status_code != 200:
+            return RedirectResponse(url=f"{FRONTEND_URL}/auth?error=user_info_failed")
+        
+        user_info = user_response.json()
+        
+        # Create or update user
+        existing_user = await db.users.find_one({"facebook_id": user_info["id"]}, {"_id": 0})
+        
+        if existing_user:
+            user = User(**existing_user)
+        else:
+            user = User(
+                facebook_id=user_info["id"],
+                name=user_info.get("name", "Facebook User"),
+                email=user_info.get("email"),
+                picture=user_info.get("picture", {}).get("data", {}).get("url")
+            )
+            await db.users.insert_one(user.model_dump())
+        
+        # Create JWT token
+        app_token = create_token(user.id)
+        
+        # Clean up state
+        del oauth_states[state]
+        
+        return RedirectResponse(url=f"{FRONTEND_URL}/auth?token={app_token}")
+
+@api_router.post("/auth/demo-login")
+async def demo_login(name: str):
+    """Demo login for testing without Facebook"""
+    demo_id = f"demo-{str(uuid.uuid4())[:8]}"
+    
+    existing_user = await db.users.find_one({"facebook_id": demo_id}, {"_id": 0})
+    
+    if existing_user:
+        user = User(**existing_user)
+    else:
+        user = User(
+            facebook_id=demo_id,
+            name=name,
+            email=None,
+            picture=None
+        )
+        await db.users.insert_one(user.model_dump())
+    
     token = create_token(user.id)
     return {"user": user, "token": token}
 
@@ -376,14 +468,12 @@ async def send_broadcast(broadcast_id: str, current_user: User = Depends(get_cur
     if not broadcast:
         raise HTTPException(status_code=404, detail="Broadcast not found")
     
-    # Get subscribers count
     query = {"page_id": broadcast["page_id"], "subscribed": True}
     if broadcast["target_audience"] == "tags" and broadcast["target_tags"]:
         query["tags"] = {"$in": broadcast["target_tags"]}
     
     total = await db.subscribers.count_documents(query)
     
-    # Update broadcast status
     await db.broadcasts.update_one(
         {"id": broadcast_id},
         {"$set": {
@@ -471,7 +561,6 @@ async def get_stats(page_id: Optional[str] = None, current_user: User = Depends(
         total_flows=total_flows
     )
 
-# Include router
 app.include_router(api_router)
 
 app.add_middleware(
