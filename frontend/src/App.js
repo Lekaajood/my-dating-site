@@ -144,6 +144,7 @@ function App() {
               </DashboardLayout>
             </PrivateRoute>
           } />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-center" richColors />
