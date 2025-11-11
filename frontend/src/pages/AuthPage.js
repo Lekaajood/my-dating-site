@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { MessageSquare, Zap, Users, TrendingUp } from 'lucide-react';
 
@@ -14,47 +13,55 @@ const API = `${BACKEND_URL}/api`;
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
+  const [demoMode, setDemoMode] = useState(false);
+  const [demoName, setDemoName] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  useEffect(() => {
+    // Handle OAuth callback
+    const token = searchParams.get('token');
+    const error = searchParams.get('error');
+    
+    if (token) {
+      localStorage.setItem('token', token);
+      toast.success('تم تسجيل الدخول عبر Facebook بنجاح!');
+      navigate('/');
+    } else if (error) {
+      toast.error(`خطأ في تسجيل الدخول: ${error}`);
+    }
+  }, [searchParams, navigate]);
+
+  const handleFacebookLogin = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/auth/facebook/login`);
+      
+      if (res.data.demo_mode) {
+        // Demo mode - show demo login form
+        setDemoMode(true);
+        toast.info('وضع Demo: يمكنك تسجيل الدخول بدون Facebook');
+      } else {
+        // Redirect to Facebook OAuth
+        window.location.href = res.data.auth_url;
+      }
+    } catch (error) {
+      toast.error('فشل الاتصال بـ Facebook');
+      setLoading(false);
+    }
   };
 
-  const handleLogin = async (e) => {
+  const handleDemoLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/auth/login`, {
-        email: formData.email,
-        password: formData.password
-      });
+      const res = await axios.post(`${API}/auth/demo-login?name=${encodeURIComponent(demoName)}`);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       toast.success('تم تسجيل الدخول بنجاح!');
       navigate('/');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'فشل تسجيل الدخول');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API}/auth/register`, formData);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      toast.success('تم إنشاء الحساب بنجاح!');
-      navigate('/');
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'فشل إنشاء الحساب');
+      toast.error('فشل تسجيل الدخول');
     } finally {
       setLoading(false);
     }
