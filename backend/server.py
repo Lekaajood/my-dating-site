@@ -43,11 +43,20 @@ oauth_states = {}
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    facebook_id: str
-    email: Optional[str] = None
+    facebook_id: Optional[str] = None
+    email: str
     name: str
     picture: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class UserRegister(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
 
 class FacebookPage(BaseModel):
     model_config = ConfigDict(extra="ignore")
