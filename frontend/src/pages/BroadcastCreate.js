@@ -289,6 +289,15 @@ export default function BroadcastCreate() {
                       placeholder="رابط الصورة (اختياري)"
                       data-testid={`card-image-${cardIndex}`}
                     />
+                    <Input
+                      value={card.image_click_url || ''}
+                      onChange={(e) => updateCard(cardIndex, 'image_click_url', e.target.value)}
+                      placeholder="رابط عند النقر على الصورة (اختياري)"
+                      data-testid={`card-image-click-${cardIndex}`}
+                    />
+                    <p className="text-xs text-gray-500">
+                      💡 إذا أضفت رابط، المستخدم سيتم توجيهه عند النقر على الصورة
+                    </p>
 
                     {/* Card Buttons */}
                     <div className="pt-3 border-t border-gray-200">
